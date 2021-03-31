@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib import messages
 import bcrypt
-from .models import User
+from .models import User, MessagePost, Comment
 
 # Create your views here.
 
@@ -47,9 +47,45 @@ def login(request):
     else:
         return redirect('/')
 
+def create_message(request):
+    if request.method =='POST':
+        error=MessagePost.objects.post_validator(request.POST)
+        if error:
+            messages.error(request, error)
+        MessagePost.objects.create(content=request.POST['content'], poster=User.objects.get(id=request.session['user_id']))
+        return redirect('/success')
+    return redirect('/')
+
+def create_comment(request):
+    if request.method=='POST':
+        Comment.objects.create(content=request.POST['content'], post=User.objects.get(id=request.session['user_id']), message=MessagePost.objects.get(id=request.POST['message']))
+        return redirect('/success')
+    return redirect('/')
+
+def profile(request, id):
+    context = {
+        'user': User.objects.get(id=id)
+    }
+    return render(request, 'profile.html', context)
+
+def delete_message(request, id):
+    MessagePost.objects.get(id=id).delete()
+    return redirect('/success')
+
+def delete_comment(request, id):
+    Comment.objects.get(id=id).delete()
+    return redirect('/success')
+
+    
+def comment_delete(request, comment_id_):
+    Comment.objects.get(id=comment_id).delete()
+    return redirect('/success')
 
 
 def success(request):
     if 'user_id' not in request.session:
         return redirect('/')
-    return render(request, 'success.html')
+    context = {
+        'all_messages': MessagePost.objects.all()
+    }
+    return render(request, 'success.html', context)

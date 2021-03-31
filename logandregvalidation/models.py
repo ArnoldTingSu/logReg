@@ -28,3 +28,24 @@ class User(models.Model):
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
     objects = UserManager()
+
+class MessageManager(models.Manager):
+    def post_validator(self, postData):
+        errors = ""
+        if len(postData['content']) < 1:
+            errors = "You must provide at least 1 character in your post!"
+        return errors
+
+class MessagePost(models.Model):
+    content=models.TextField()
+    poster=models.ForeignKey(User, related_name="messages", on_delete=models.CASCADE)
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
+    objects = MessageManager()
+
+class Comment(models.Model):
+    content=models.TextField()
+    post=models.ForeignKey(User,related_name="comments", on_delete=models.CASCADE)
+    message=models.ForeignKey(MessagePost,related_name="comments", on_delete=models.CASCADE)
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)

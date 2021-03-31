@@ -9,5 +9,41 @@
 <body>
     <a href="/logout">logout</a>
     <h1>Success! Welcome, {{request.session.user_name}}</h1>
+
+    <form action="/create_message" method="POST">
+        {%csrf_token%}
+    <textarea name="content" cols="50" rows="5"></textarea>
+    <input type="submit" value="Post Message">
+    </form>
+
+    <div id="messages">
+        {% for message in all_messages%}
+        <div class="message">
+            <p>Posted By: <a href="/user/{{message.poster.id}}"> {{message.poster.first}} {{message.poster.last}}</p></a>
+            {% if message.poster.id == request.session.user_id %}
+                <a href="/delete/{{message.id}}">Delete Message</a>
+            {% endif %}
+            <p>{{message.created_at}}</p>
+            <p>{{message.content}}</p>
+            {% for comment in message.comments.all %}
+                <p><a href="/user/{{comment.post.id}}">{{comment.post.first}} {{comment.post.last}} </p></a>
+                {% if comment.post.id == request.session.user_id %}
+                <a href="/comment_delete/{{comment.id}}">Delete Comment</a>
+                {% endif %}
+                <p>{{comment.created_at}}</p>
+                <p>{{comment.content}}</p>
+                <br>
+            {% endfor %}
+            <form action="/create_comment" method='POST'>
+            <textarea name="content" cols="35" rows="2"></textarea>
+            <input type="hidden" name="message" value={{message.id}}>
+            <input type="submit" value="Post Comment">
+                {% csrf_token %}
+            
+            </form>
+        </div>
+            <br>
+        {% endfor %}
+    </div>
 </body>
 </html>

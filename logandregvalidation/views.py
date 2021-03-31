@@ -37,11 +37,6 @@ def register(request):
 
 def login(request):
     if request.method=='POST':
-        errors = User.objects.validator(request.POST)
-        if errors:
-            for error in errors:
-                messages.error(request, errors[error])
-            return redirect('/')
         known_user=User.objects.filter(email=request.POST['email'])
         if known_user:
             known_user = known_user[0]

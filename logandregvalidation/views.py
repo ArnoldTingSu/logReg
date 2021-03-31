@@ -8,6 +8,11 @@ from .models import User
 def index(request):
     return render(request, 'login.html')
 
+def logout(request):
+    request.session.clear()
+    return redirect('/')
+
+
 def register(request):
     if request.method=='POST':
         errors = User.objects.validator(request.POST)
@@ -18,7 +23,7 @@ def register(request):
         else:
             user_password = request.POST['password']
             hash_password = bcrypt.hashpw(user_password.encode(), bcrypt.gensalt()).decode()
-            User.objects.create(
+            new_user = User.objects.create(
                 first=request.POST['first'],
                 last=request.POST['last'],
                 email=request.POST['email'],
@@ -32,6 +37,11 @@ def register(request):
 
 def login(request):
     if request.method=='POST':
+        errors = User.objects.validator(request.POST)
+        if errors:
+            for error in errors:
+                messages.error(request, errors[error])
+            return redirect('/')
         known_user=User.objects.filter(email=request.POST['email'])
         if known_user:
             known_user = known_user[0]
@@ -41,6 +51,7 @@ def login(request):
                 return redirect('/success')
     else:
         return redirect('/')
+
 
 
 def success(request):
